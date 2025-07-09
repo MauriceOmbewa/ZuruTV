@@ -43,10 +43,11 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-background font-bold text-lg">M</span>
-            </div>
-            <span className="text-white font-bold text-xl hidden sm:block">MovieStream</span>
+            {/* <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-background font-bold text-lg">Z</span>
+            </div> */}
+            {/* <a href="#" class="text-2xl font-bold text-yellow-400">Zuru<span class="text-white">TV</span> 📺</a> */}
+            <span className="text-yellow-400 font-bold text-2xl hidden sm:block">ZuruTV 📺</span>
           </Link>
 
           {/* Desktop Navigation */}
