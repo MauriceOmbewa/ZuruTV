@@ -1,4 +1,4 @@
-# MovieStream - Movie Streaming Web App
+# ZuruTV - Movie Streaming Web App
 
 A complete, fully functional, and responsive Movie Streaming Web App built with ReactJS and TailwindCSS. The app allows users to search for movies, view details, watch trailers, and manage their watchlist.
 
@@ -44,8 +44,8 @@ A complete, fully functional, and responsive Movie Streaming Web App built with 
 
 ### 1. Clone the Repository
 ```bash
-git clone <repository-url>
-cd movie-streaming-app
+git clone https://github.com/MauriceOmbewa/ZuruTV.git
+cd ZuruTV
 ```
 
 ### 2. Install Dependencies
