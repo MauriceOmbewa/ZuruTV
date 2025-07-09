@@ -43,10 +43,6 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            {/* <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-background font-bold text-lg">Z</span>
-            </div> */}
-            {/* <a href="#" class="text-2xl font-bold text-yellow-400">Zuru<span class="text-white">TV</span> 📺</a> */}
             <div className="flex items-center">
               <div className="font-bold text-2xl">
                 <span className="text-yellow-400">Zuru</span>
