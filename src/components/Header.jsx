@@ -47,7 +47,7 @@ const Header = () => {
               <span className="text-background font-bold text-lg">Z</span>
             </div> */}
             {/* <a href="#" class="text-2xl font-bold text-yellow-400">Zuru<span class="text-white">TV</span> 📺</a> */}
-            <div className="font-bold text-2xl hidden sm:block flex items-baseline">
+            <div className="font-bold text-2xl flex items-baseline">
               <span className="text-yellow-400">Zuru</span>
               <span className="text-white">TV</span>
               <span className="text-2xl ml-1" style={{lineHeight: '1'}}>📺</span>
