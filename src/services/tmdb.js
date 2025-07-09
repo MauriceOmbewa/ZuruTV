@@ -10,10 +10,10 @@ const defaultOptions = {
   },
 };
 
-// Mock data for demo purposes
+// Mock data with real TMDB IDs for demo purposes
 const mockMovies = [
   {
-    id: 1,
+    id: 603,
     title: 'The Matrix',
     overview: 'A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.',
     poster_path: '/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg',
@@ -24,7 +24,7 @@ const mockMovies = [
     popularity: 85.5,
   },
   {
-    id: 2,
+    id: 27205,
     title: 'Inception',
     overview: 'A thief who steals corporate secrets through dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.',
     poster_path: '/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg',
@@ -35,7 +35,7 @@ const mockMovies = [
     popularity: 92.1,
   },
   {
-    id: 3,
+    id: 157336,
     title: 'Interstellar',
     overview: "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.",
     poster_path: '/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg',
@@ -49,7 +49,7 @@ const mockMovies = [
 
 const mockTVShows = [
   {
-    id: 101,
+    id: 66732,
     name: 'Stranger Things',
     overview: 'When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces, and one strange little girl.',
     poster_path: '/49WJfeN0moxb9IPfGn8AIqMGskD.jpg',
@@ -60,7 +60,7 @@ const mockTVShows = [
     popularity: 95.3,
   },
   {
-    id: 102,
+    id: 71912,
     name: 'The Witcher',
     overview: 'Geralt of Rivia, a mutated monster-hunter for hire, journeys toward his destiny in a turbulent world where people often prove more wicked than beasts.',
     poster_path: '/7vjaCdMw15FEbXyLQTVa04URsPm.jpg',
@@ -124,11 +124,43 @@ class TMDBService {
   }
 
   async getMovieDetails(movieId) {
-    return this.makeRequest(`/movie/${movieId}`);
+    try {
+      const response = await this.makeRequest(`/movie/${movieId}`);
+      return response;
+    } catch (error) {
+      // Return mock movie details for demo
+      return {
+        id: movieId,
+        title: 'Sample Movie',
+        overview: 'This is a sample movie for demonstration purposes.',
+        poster_path: '/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg',
+        backdrop_path: '/fNG7i7RqMErkcqhohV2a6cV1Ehy.jpg',
+        release_date: '2023-01-01',
+        vote_average: 7.5,
+        genres: [{ id: 28, name: 'Action' }],
+        runtime: 120
+      };
+    }
   }
 
   async getTVShowDetails(showId) {
-    return this.makeRequest(`/tv/${showId}`);
+    try {
+      const response = await this.makeRequest(`/tv/${showId}`);
+      return response;
+    } catch (error) {
+      // Return mock TV show details for demo
+      return {
+        id: showId,
+        name: 'Sample TV Show',
+        overview: 'This is a sample TV show for demonstration purposes.',
+        poster_path: '/49WJfeN0moxb9IPfGn8AIqMGskD.jpg',
+        backdrop_path: '/56v2KjBlU4XaOv9rVYEQypROD7P.jpg',
+        first_air_date: '2023-01-01',
+        vote_average: 8.0,
+        genres: [{ id: 18, name: 'Drama' }],
+        episode_run_time: [45]
+      };
+    }
   }
 
   async searchMovies(query, page = 1) {
@@ -140,11 +172,21 @@ class TMDBService {
   }
 
   async getMovieVideos(movieId) {
-    return this.makeRequest(`/movie/${movieId}/videos`);
+    try {
+      const response = await this.makeRequest(`/movie/${movieId}/videos`);
+      return response;
+    } catch (error) {
+      return { results: [] };
+    }
   }
 
   async getTVShowVideos(showId) {
-    return this.makeRequest(`/tv/${showId}/videos`);
+    try {
+      const response = await this.makeRequest(`/tv/${showId}/videos`);
+      return response;
+    } catch (error) {
+      return { results: [] };
+    }
   }
 
   getImageUrl(path, size = 'w500') {
