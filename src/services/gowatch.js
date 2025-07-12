@@ -1,3 +1,4 @@
+const STREMIO_BASE_URL = import.meta.env.VITE_STREMIO_BASE_URL || 'https://v3-cinemeta.strem.io';
 const RAPIDAPI_KEY = import.meta.env.VITE_RAPIDAPI_KEY || '7c0c550be7msh9b53caddfcc711fp1d1f27jsn0be1433b2089';
 const GOWATCH_BASE_URL = import.meta.env.VITE_GOWATCH_BASE_URL || 'https://gowatch.p.rapidapi.com';
 const TMDB_API_KEY = 'd242ab289791acb2603b10469634dff6';
@@ -84,11 +85,54 @@ const mockTVShows = [
 
 class GoWatchService {
   constructor() {
+    this.stremioBaseUrl = STREMIO_BASE_URL;
     this.rapidApiKey = RAPIDAPI_KEY;
     this.gowatchBaseUrl = GOWATCH_BASE_URL;
     this.tmdbApiKey = TMDB_API_KEY;
     this.tmdbBaseUrl = TMDB_BASE_URL;
     this.imageBaseUrl = IMAGE_BASE_URL;
+  }
+
+  async makeStremioRequest(endpoint) {
+    try {
+      const url = `${this.stremioBaseUrl}${endpoint}`;
+      console.log(`Making Stremio request to: ${url}`);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Stremio API Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Stremio API Response:`, data);
+      return data;
+    } catch (error) {
+      console.error('Stremio API Error:', error);
+      return null;
+    }
+  }
+
+  convertStremioToTMDB(stremioItem) {
+    // Convert Stremio format to TMDB-like format
+    const isMovie = stremioItem.type === 'movie';
+    
+    return {
+      id: stremioItem.imdb_id || stremioItem.id,
+      title: isMovie ? stremioItem.name : undefined,
+      name: !isMovie ? stremioItem.name : undefined,
+      overview: stremioItem.description || stremioItem.plot || '',
+      poster_path: stremioItem.poster || null,
+      backdrop_path: stremioItem.background || null,
+      release_date: isMovie ? stremioItem.releaseInfo : undefined,
+      first_air_date: !isMovie ? stremioItem.releaseInfo : undefined,
+      vote_average: parseFloat(stremioItem.imdbRating) || 0,
+      genre_ids: stremioItem.genres || [],
+      popularity: 50,
+      runtime: stremioItem.runtime ? parseInt(stremioItem.runtime) : undefined,
+      genres: stremioItem.genres ? stremioItem.genres.map(g => ({ id: 0, name: g })) : [],
+      _isStremioData: true // Flag to identify Stremio data
+    };
   }
 
   async makeTMDBRequest(endpoint, params = {}) {
@@ -153,9 +197,22 @@ class GoWatchService {
   }
 
   async getTrending(mediaType = 'movie', timeWindow = 'week') {
-    console.log('Fetching trending movies...');
+    console.log(`Fetching trending ${mediaType}...`);
     
-    // Try TMDB API first (more reliable)
+    // Try Stremio API first
+    try {
+      const catalogType = mediaType === 'movie' ? 'movie' : 'series';
+      const result = await this.makeStremioRequest(`/catalog/${catalogType}/top/skip=0.json`);
+      if (result && result.metas && result.metas.length > 0) {
+        console.log('Using Stremio trending data');
+        const convertedResults = result.metas.map(item => this.convertStremioToTMDB(item));
+        return { results: convertedResults };
+      }
+    } catch (error) {
+      console.log('Stremio trending failed, trying TMDB...');
+    }
+    
+    // Try TMDB API as backup
     try {
       const result = await this.makeTMDBRequest(`/trending/${mediaType}/${timeWindow}`);
       if (result && result.results) {
@@ -163,18 +220,7 @@ class GoWatchService {
         return result;
       }
     } catch (error) {
-      console.log('TMDB trending failed, trying GoWatch...');
-    }
-    
-    // Try GoWatch API as backup
-    try {
-      const result = await this.makeRequest('/trending');
-      if (result && result.results) {
-        console.log('Using GoWatch trending data');
-        return result;
-      }
-    } catch (error) {
-      console.log('GoWatch trending failed, using mock data');
+      console.log('TMDB trending failed, using mock data');
     }
     
     // Fallback to mock data
@@ -185,7 +231,20 @@ class GoWatchService {
   async getPopular(mediaType = 'movie') {
     console.log(`Fetching popular ${mediaType} content...`);
     
-    // Try TMDB API first (more reliable)
+    // Try Stremio API first
+    try {
+      const catalogType = mediaType === 'movie' ? 'movie' : 'series';
+      const result = await this.makeStremioRequest(`/catalog/${catalogType}/top/skip=0.json`);
+      if (result && result.metas && result.metas.length > 0) {
+        console.log(`Using Stremio popular ${mediaType} data`);
+        const convertedResults = result.metas.map(item => this.convertStremioToTMDB(item));
+        return { results: convertedResults };
+      }
+    } catch (error) {
+      console.log(`Stremio popular ${mediaType} failed, trying TMDB...`);
+    }
+    
+    // Try TMDB API as backup
     try {
       const result = await this.makeTMDBRequest(`/${mediaType}/popular`);
       if (result && result.results) {
@@ -193,18 +252,7 @@ class GoWatchService {
         return result;
       }
     } catch (error) {
-      console.log(`TMDB popular ${mediaType} failed, trying GoWatch...`);
-    }
-    
-    // Try GoWatch API as backup
-    try {
-      const result = await this.makeRequest('/popular');
-      if (result && result.results) {
-        console.log(`Using GoWatch popular ${mediaType} data`);
-        return result;
-      }
-    } catch (error) {
-      console.log(`GoWatch popular ${mediaType} failed, using mock data`);
+      console.log(`TMDB popular ${mediaType} failed, using mock data`);
     }
     
     // Fallback to mock data
@@ -216,26 +264,28 @@ class GoWatchService {
   }
 
   async getMovieDetails(movieId) {
-    // Try TMDB API first
+    // Try Stremio API first (works with IMDB IDs)
     try {
-      const response = await this.makeTMDBRequest(`/movie/${movieId}`);
-      if (response) {
-        console.log('Using TMDB movie details');
-        return response;
+      const response = await this.makeStremioRequest(`/meta/movie/${movieId}.json`);
+      if (response && response.meta) {
+        console.log('Using Stremio movie details');
+        return this.convertStremioToTMDB(response.meta);
       }
     } catch (error) {
-      console.log('TMDB movie details failed, trying GoWatch...');
+      console.log('Stremio movie details failed, trying TMDB...');
     }
     
-    // Try GoWatch API as backup
-    try {
-      const response = await this.makeRequest(`/details`, { id: movieId, type: 'movie' });
-      if (response) {
-        console.log('Using GoWatch movie details');
-        return response;
+    // Try TMDB API as backup (only if movieId is numeric)
+    if (!movieId.toString().startsWith('tt')) {
+      try {
+        const response = await this.makeTMDBRequest(`/movie/${movieId}`);
+        if (response) {
+          console.log('Using TMDB movie details');
+          return response;
+        }
+      } catch (error) {
+        console.log('TMDB movie details failed, using fallback');
       }
-    } catch (error) {
-      console.log('GoWatch movie details failed, using fallback');
     }
     
     // Find movie in mock data or return fallback
@@ -262,26 +312,28 @@ class GoWatchService {
   }
 
   async getTVShowDetails(showId) {
-    // Try TMDB API first
+    // Try Stremio API first (works with IMDB IDs)
     try {
-      const response = await this.makeTMDBRequest(`/tv/${showId}`);
-      if (response) {
-        console.log('Using TMDB TV show details');
-        return response;
+      const response = await this.makeStremioRequest(`/meta/series/${showId}.json`);
+      if (response && response.meta) {
+        console.log('Using Stremio TV show details');
+        return this.convertStremioToTMDB(response.meta);
       }
     } catch (error) {
-      console.log('TMDB TV show details failed, trying GoWatch...');
+      console.log('Stremio TV show details failed, trying TMDB...');
     }
     
-    // Try GoWatch API as backup
-    try {
-      const response = await this.makeRequest(`/details`, { id: showId, type: 'tv' });
-      if (response) {
-        console.log('Using GoWatch TV show details');
-        return response;
+    // Try TMDB API as backup (only if showId is numeric)
+    if (!showId.toString().startsWith('tt')) {
+      try {
+        const response = await this.makeTMDBRequest(`/tv/${showId}`);
+        if (response) {
+          console.log('Using TMDB TV show details');
+          return response;
+        }
+      } catch (error) {
+        console.log('TMDB TV show details failed, using fallback');
       }
-    } catch (error) {
-      console.log('GoWatch TV show details failed, using fallback');
     }
     
     // Find TV show in mock data or return fallback
@@ -401,11 +453,25 @@ class GoWatchService {
 
   getImageUrl(path, size = 'w500') {
     if (!path) return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9Ijc1MCIgdmlld0JveD0iMCAwIDUwMCA3NTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNzUwIiBmaWxsPSIjMWExYTFhIi8+Cjx0ZXh0IHg9IjI1MCIgeT0iMzc1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM2NjY2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K';
+    
+    // If it's already a full URL (from Stremio), return as-is
+    if (path.startsWith('http')) {
+      return path;
+    }
+    
+    // Otherwise, use TMDB image base URL
     return `${this.imageBaseUrl}/${size}${path}`;
   }
 
   getBackdropUrl(path, size = 'w1280') {
     if (!path) return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4MCIgaGVpZ2h0PSI3MjAiIHZpZXdCb3g9IjAgMCAxMjgwIDcyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEyODAiIGhlaWdodD0iNzIwIiBmaWxsPSIjMWExYTFhIi8+Cjx0ZXh0IHg9IjY0MCIgeT0iMzYwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMzYiIGZpbGw9IiM2NjY2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K';
+    
+    // If it's already a full URL (from Stremio), return as-is
+    if (path.startsWith('http')) {
+      return path;
+    }
+    
+    // Otherwise, use TMDB image base URL
     return `${this.imageBaseUrl}/${size}${path}`;
   }
 }
