@@ -250,13 +250,13 @@ class GoWatchService {
     
     return {
       id: movieId,
-      title: 'Content Not Available',
-      overview: 'This content is no longer available.',
+      title: 'Movie Details Unavailable',
+      overview: 'Sorry, the details for this movie are currently unavailable. This might be due to content restrictions or the movie being removed from the database.',
       poster_path: null,
       backdrop_path: null,
-      release_date: null,
+      release_date: new Date().toISOString().split('T')[0],
       vote_average: 0,
-      genres: [],
+      genres: [{ id: 0, name: 'Unknown' }],
       runtime: 0
     };
   }
@@ -296,14 +296,14 @@ class GoWatchService {
     
     return {
       id: showId,
-      name: 'Content Not Available',
-      overview: 'This content is no longer available.',
+      name: 'TV Show Details Unavailable',
+      overview: 'Sorry, the details for this TV show are currently unavailable. This might be due to content restrictions or the show being removed from the database.',
       poster_path: null,
       backdrop_path: null,
-      first_air_date: null,
+      first_air_date: new Date().toISOString().split('T')[0],
       vote_average: 0,
-      genres: [],
-      episode_run_time: []
+      genres: [{ id: 0, name: 'Unknown' }],
+      episode_run_time: [45]
     };
   }
 
@@ -400,12 +400,12 @@ class GoWatchService {
   }
 
   getImageUrl(path, size = 'w500') {
-    if (!path) return 'https://via.placeholder.com/500x750/1a1a1a/666666?text=No+Image';
+    if (!path) return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9Ijc1MCIgdmlld0JveD0iMCAwIDUwMCA3NTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNzUwIiBmaWxsPSIjMWExYTFhIi8+Cjx0ZXh0IHg9IjI1MCIgeT0iMzc1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM2NjY2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K';
     return `${this.imageBaseUrl}/${size}${path}`;
   }
 
   getBackdropUrl(path, size = 'w1280') {
-    if (!path) return 'https://via.placeholder.com/1280x720/1a1a1a/666666?text=No+Image';
+    if (!path) return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4MCIgaGVpZ2h0PSI3MjAiIHZpZXdCb3g9IjAgMCAxMjgwIDcyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEyODAiIGhlaWdodD0iNzIwIiBmaWxsPSIjMWExYTFhIi8+Cjx0ZXh0IHg9IjY0MCIgeT0iMzYwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMzYiIGZpbGw9IiM2NjY2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K';
     return `${this.imageBaseUrl}/${size}${path}`;
   }
 }
