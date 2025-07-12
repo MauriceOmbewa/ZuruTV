@@ -301,16 +301,6 @@ class GoWatchService {
       }
     }
     
-    // Find movie in mock data or return fallback
-    const mockMovie = mockMovies.find(m => m.id == movieId);
-    if (mockMovie) {
-      return {
-        ...mockMovie,
-        genres: [{ id: 28, name: 'Action' }],
-        runtime: 120
-      };
-    }
-    
     // Try to use cached catalog data as fallback
     const cachedItem = this.catalogCache.get(movieId);
     if (cachedItem) {
@@ -364,16 +354,6 @@ class GoWatchService {
       } catch (error) {
         console.log('TMDB TV show details failed, using fallback');
       }
-    }
-    
-    // Find TV show in mock data or return fallback
-    const mockShow = mockTVShows.find(s => s.id == showId);
-    if (mockShow) {
-      return {
-        ...mockShow,
-        genres: [{ id: 18, name: 'Drama' }],
-        episode_run_time: [45]
-      };
     }
     
     // Try to use cached catalog data as fallback
