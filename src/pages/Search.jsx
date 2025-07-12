@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search as SearchIcon } from 'lucide-react';
 import MovieGrid from '../components/MovieGrid';
-import TMDBService from '../services/tmdb';
+import GoWatchService from '../services/gowatch';
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,8 +27,8 @@ const Search = () => {
 
     try {
       const [movieResults, tvResults] = await Promise.all([
-        TMDBService.searchMovies(query),
-        TMDBService.searchTVShows(query),
+        GoWatchService.searchMovies(query),
+        GoWatchService.searchTVShows(query),
       ]);
 
       const combinedResults = [
@@ -103,7 +103,7 @@ const Search = () => {
                         <div key={`${item.type}-${item.id}`} className="group relative bg-dark-1 rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl">
                           <div className="aspect-[2/3] relative overflow-hidden">
                             <img
-                              src={TMDBService.getImageUrl(item.poster_path)}
+                              src={GoWatchService.getImageUrl(item.poster_path)}
                               alt={item.title || item.name}
                               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                               loading="lazy"

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Play, Info, Plus, Check } from 'lucide-react';
 import { useWatchlist } from '../context/WatchlistContext';
 import { useAuth } from '../context/AuthContext';
-import TMDBService from '../services/tmdb';
+import GoWatchService from '../services/gowatch';
 import toast from 'react-hot-toast';
 
 const HeroBanner = ({ movie }) => {
@@ -34,7 +34,7 @@ const HeroBanner = ({ movie }) => {
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
-          src={TMDBService.getBackdropUrl(movie.backdrop_path, 'original')}
+          src={GoWatchService.getBackdropUrl(movie.backdrop_path, 'original')}
           alt={movie.title}
           className={`w-full h-full object-cover transition-opacity duration-500 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'

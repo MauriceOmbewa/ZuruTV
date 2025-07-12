@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Star, Calendar, Clock, Play, Heart, Share2 } from 'lucide-react';
 import { useWatchlist } from '../context/WatchlistContext';
 import { useAuth } from '../context/AuthContext';
-import TMDBService from '../services/tmdb';
+import GoWatchService from '../services/gowatch';
 import VideoPlayer from '../components/VideoPlayer';
 import TrailerModal from '../components/TrailerModal';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -23,8 +23,8 @@ const MovieDetail = () => {
     const fetchMovieDetails = async () => {
       try {
         const [movieData, videosData] = await Promise.all([
-          type === 'movie' ? TMDBService.getMovieDetails(id) : TMDBService.getTVShowDetails(id),
-          type === 'movie' ? TMDBService.getMovieVideos(id) : TMDBService.getTVShowVideos(id),
+          type === 'movie' ? GoWatchService.getMovieDetails(id) : GoWatchService.getTVShowDetails(id),
+          type === 'movie' ? GoWatchService.getMovieVideos(id) : GoWatchService.getTVShowVideos(id),
         ]);
 
         setMovie(movieData);
@@ -102,7 +102,7 @@ const MovieDetail = () => {
       <div className="relative h-[60vh] overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={TMDBService.getBackdropUrl(movie.backdrop_path, 'original')}
+            src={GoWatchService.getBackdropUrl(movie.backdrop_path, 'original')}
             alt={title}
             className="w-full h-full object-cover"
           />
@@ -117,7 +117,7 @@ const MovieDetail = () => {
             {/* Poster */}
             <div className="flex-shrink-0">
               <img
-                src={TMDBService.getImageUrl(movie.poster_path, 'w500')}
+                src={GoWatchService.getImageUrl(movie.poster_path, 'w500')}
                 alt={title}
                 className="w-64 h-96 object-cover rounded-lg shadow-2xl mx-auto md:mx-0"
               />
@@ -221,7 +221,7 @@ const MovieDetail = () => {
               </div>
               <VideoPlayer
                 url={trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : null}
-                thumbnail={TMDBService.getBackdropUrl(movie.backdrop_path)}
+                thumbnail={GoWatchService.getBackdropUrl(movie.backdrop_path)}
                 title={title}
                 type="movie"
               />

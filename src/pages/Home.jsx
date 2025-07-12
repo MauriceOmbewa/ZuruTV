@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import HeroBanner from '../components/HeroBanner';
 import MovieGrid from '../components/MovieGrid';
-import TMDBService from '../services/tmdb';
+import GoWatchService from '../services/gowatch';
 
 const Home = () => {
   const [heroMovie, setHeroMovie] = useState(null);
@@ -13,8 +13,8 @@ const Home = () => {
     const fetchHomeData = async () => {
       try {
         const [trending, popularTV] = await Promise.all([
-          TMDBService.getTrending('movie', 'week'),
-          TMDBService.getPopular('tv'),
+          GoWatchService.getTrending('movie', 'week'),
+          GoWatchService.getPopular('tv'),
         ]);
 
         setTrendingMovies(trending.results || []);

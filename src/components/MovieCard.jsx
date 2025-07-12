@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Star, Calendar, Heart, Play } from 'lucide-react';
 import { useWatchlist } from '../context/WatchlistContext';
 import { useAuth } from '../context/AuthContext';
-import TMDBService from '../services/tmdb';
+import GoWatchService from '../services/gowatch';
 import toast from 'react-hot-toast';
 
 const MovieCard = ({ item, type = 'movie' }) => {
@@ -35,7 +35,7 @@ const MovieCard = ({ item, type = 'movie' }) => {
       <Link to={`/${type}/${item.id}`} className="block relative">
         <div className="aspect-[2/3] relative overflow-hidden">
           <img
-            src={TMDBService.getImageUrl(item.poster_path)}
+            src={GoWatchService.getImageUrl(item.poster_path)}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
             loading="lazy"

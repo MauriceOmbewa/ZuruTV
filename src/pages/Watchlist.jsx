@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, Trash2 } from 'lucide-react';
 import { useWatchlist } from '../context/WatchlistContext';
 import { useAuth } from '../context/AuthContext';
-import TMDBService from '../services/tmdb';
+import GoWatchService from '../services/gowatch';
 import toast from 'react-hot-toast';
 
 const Watchlist = () => {
@@ -71,7 +71,7 @@ const Watchlist = () => {
               <div className="flex">
                 <Link to={`/${item.type}/${item.id}`} className="flex-shrink-0">
                   <img
-                    src={TMDBService.getImageUrl(item.poster_path, 'w200')}
+                    src={GoWatchService.getImageUrl(item.poster_path, 'w200')}
                     alt={item.title || item.name}
                     className="w-24 h-36 object-cover"
                   />
