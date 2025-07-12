@@ -91,6 +91,7 @@ class GoWatchService {
     this.tmdbApiKey = TMDB_API_KEY;
     this.tmdbBaseUrl = TMDB_BASE_URL;
     this.imageBaseUrl = IMAGE_BASE_URL;
+    this.catalogCache = new Map(); // Cache catalog data for fallback
   }
 
   async makeStremioRequest(endpoint) {
@@ -205,6 +206,12 @@ class GoWatchService {
       const result = await this.makeStremioRequest(`/catalog/${catalogType}/top/skip=0.json`);
       if (result && result.metas && result.metas.length > 0) {
         console.log('Using Stremio trending data');
+        // Cache catalog data for fallback use
+        result.metas.forEach(item => {
+          if (item.imdb_id || item.id) {
+            this.catalogCache.set(item.imdb_id || item.id, item);
+          }
+        });
         const convertedResults = result.metas.map(item => this.convertStremioToTMDB(item));
         return { results: convertedResults };
       }
@@ -237,6 +244,12 @@ class GoWatchService {
       const result = await this.makeStremioRequest(`/catalog/${catalogType}/top/skip=0.json`);
       if (result && result.metas && result.metas.length > 0) {
         console.log(`Using Stremio popular ${mediaType} data`);
+        // Cache catalog data for fallback use
+        result.metas.forEach(item => {
+          if (item.imdb_id || item.id) {
+            this.catalogCache.set(item.imdb_id || item.id, item);
+          }
+        });
         const convertedResults = result.metas.map(item => this.convertStremioToTMDB(item));
         return { results: convertedResults };
       }
@@ -298,6 +311,23 @@ class GoWatchService {
       };
     }
     
+    // Try to use cached catalog data as fallback
+    const cachedItem = this.catalogCache.get(movieId);
+    if (cachedItem) {
+      console.log('Using cached catalog data for movie details');
+      return this.convertStremioToTMDB(cachedItem);
+    }
+    
+    // Try to find basic info from mock data as last resort
+    const mockMovie = mockMovies.find(m => m.id == movieId);
+    if (mockMovie) {
+      return {
+        ...mockMovie,
+        genres: [{ id: 28, name: 'Action' }],
+        runtime: 120
+      };
+    }
+    
     return {
       id: movieId,
       title: 'Movie Details Unavailable',
@@ -337,6 +367,23 @@ class GoWatchService {
     }
     
     // Find TV show in mock data or return fallback
+    const mockShow = mockTVShows.find(s => s.id == showId);
+    if (mockShow) {
+      return {
+        ...mockShow,
+        genres: [{ id: 18, name: 'Drama' }],
+        episode_run_time: [45]
+      };
+    }
+    
+    // Try to use cached catalog data as fallback
+    const cachedItem = this.catalogCache.get(showId);
+    if (cachedItem) {
+      console.log('Using cached catalog data for TV show details');
+      return this.convertStremioToTMDB(cachedItem);
+    }
+    
+    // Try to find basic info from mock data as last resort
     const mockShow = mockTVShows.find(s => s.id == showId);
     if (mockShow) {
       return {
