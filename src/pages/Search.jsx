@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search as SearchIcon } from 'lucide-react';
-import MovieGrid from '../components/MovieGrid';
+import MovieCard from '../components/MovieCard';
 import GoWatchService from '../services/gowatch';
 
 const Search = () => {
@@ -100,24 +100,7 @@ const Search = () => {
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                       {searchResults.map((item) => (
-                        <div key={`${item.type}-${item.id}`} className="group relative bg-dark-1 rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                          <div className="aspect-[2/3] relative overflow-hidden">
-                            <img
-                              src={GoWatchService.getImageUrl(item.poster_path)}
-                              alt={item.title || item.name}
-                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                              loading="lazy"
-                            />
-                          </div>
-                          <div className="p-4">
-                            <h3 className="text-white font-semibold text-sm mb-2 line-clamp-2">
-                              {item.title || item.name}
-                            </h3>
-                            <p className="text-xs text-gray-400 mb-2">
-                              {item.type === 'movie' ? 'Movie' : 'TV Show'} • {item.release_date || item.first_air_date ? new Date(item.release_date || item.first_air_date).getFullYear() : 'TBA'}
-                            </p>
-                          </div>
-                        </div>
+                        <MovieCard key={`${item.type}-${item.id}`} item={item} type={item.type} />
                       ))}
                     </div>
                   </>
