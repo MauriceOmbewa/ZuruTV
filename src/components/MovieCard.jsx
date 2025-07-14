@@ -10,6 +10,8 @@ const MovieCard = ({ item, type = 'movie' }) => {
   const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
   const { user } = useAuth();
 
+  // Auto-detect type if not provided
+  const itemType = type || (item.title ? 'movie' : 'tv');
   const title = item.title || item.name;
   const releaseDate = item.release_date || item.first_air_date;
   const inWatchlist = isInWatchlist(item.id);
@@ -25,14 +27,14 @@ const MovieCard = ({ item, type = 'movie' }) => {
       removeFromWatchlist(item.id);
       toast.success('Removed from watchlist');
     } else {
-      addToWatchlist({ ...item, type });
+      addToWatchlist({ ...item, type: itemType });
       toast.success('Added to watchlist');
     }
   };
 
   return (
     <div className="group relative bg-dark-1 rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-      <Link to={`/${type}/${item.id}`} className="block relative">
+      <Link to={`/${itemType}/${item.id}`} className="block relative">
         <div className="aspect-[2/3] relative overflow-hidden">
           <img
             src={GoWatchService.getImageUrl(item.poster_path)}
