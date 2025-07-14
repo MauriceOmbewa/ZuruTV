@@ -75,6 +75,34 @@ const VideoPlayer = ({ url, thumbnail, title, type = 'movie' }) => {
     );
   }
 
+  // Check if it's a streaming embed URL
+  const isStreamingEmbed = url.includes('vidsrc') || url.includes('embed');
+  
+  if (isStreamingEmbed) {
+    return (
+      <div className={`relative bg-black rounded-lg overflow-hidden ${
+        isFullscreen ? 'h-screen w-screen' : 'aspect-video'
+      }`}>
+        <iframe
+          src={url}
+          width="100%"
+          height="100%"
+          frameBorder="0"
+          allowFullScreen
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          className="w-full h-full"
+          title={title}
+          referrerPolicy="origin"
+        />
+        
+        {/* Overlay with source info */}
+        <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded text-sm">
+          Streaming
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={playerContainerRef}
