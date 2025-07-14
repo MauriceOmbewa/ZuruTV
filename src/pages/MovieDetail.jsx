@@ -16,6 +16,8 @@ const MovieDetail = () => {
   const [loading, setLoading] = useState(true);
   const [showTrailer, setShowTrailer] = useState(false);
   const [watchMode, setWatchMode] = useState(false);
+  const [streamingSources, setStreamingSources] = useState([]);
+  const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
   const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
   const { user } = useAuth();
 
@@ -29,6 +31,11 @@ const MovieDetail = () => {
 
         setMovie(movieData);
         setVideos(videosData.results || []);
+        
+        // Initialize streaming sources
+        const sources = GoWatchService.getStreamingUrls(id, type, 1, 1);
+        setStreamingSources(sources);
+        console.log('Available streaming sources:', sources);
       } catch (error) {
         console.error('Error fetching movie details:', error);
       } finally {
@@ -211,7 +218,7 @@ const MovieDetail = () => {
           {watchMode && (
             <div className="mt-8">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-white">Now Watching: {title}</h2>
+                <h2 className="text-2xl font-bold text-white">Now Streaming: {title}</h2>
                 <button
                   onClick={() => setWatchMode(false)}
                   className="text-gray-400 hover:text-white transition-colors"
@@ -220,11 +227,36 @@ const MovieDetail = () => {
                 </button>
               </div>
               <VideoPlayer
-                url={trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : null}
+                url={streamingSources[currentSourceIndex]?.url || 
+                  (type === 'movie' 
+                    ? GoWatchService.getMovieStreamUrl(id)
+                    : GoWatchService.getTVStreamUrl(id, 1, 1)
+                  )
+                }
                 thumbnail={GoWatchService.getBackdropUrl(movie.backdrop_path)}
                 title={title}
-                type="movie"
+                type={type}
               />
+              
+              {/* Source Selector */}
+              {streamingSources.length > 1 && (
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="text-white text-sm">Source:</span>
+                  {streamingSources.map((source, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentSourceIndex(index)}
+                      className={`px-3 py-1 rounded text-sm transition-colors ${
+                        index === currentSourceIndex
+                          ? 'bg-primary text-background'
+                          : 'bg-dark-1 text-white hover:bg-dark-2'
+                      }`}
+                    >
+                      {source.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
