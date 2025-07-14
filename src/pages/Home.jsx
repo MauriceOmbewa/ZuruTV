@@ -12,11 +12,15 @@ const Home = () => {
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
+        console.log('Fetching home page data...');
         const [trending, popularTV] = await Promise.all([
           GoWatchService.getTrending('movie', 'week'),
           GoWatchService.getPopular('tv'),
         ]);
 
+        console.log('Trending movies:', trending);
+        console.log('Popular TV shows:', popularTV);
+        
         setTrendingMovies(trending.results || []);
         setPopularTVShows(popularTV.results || []);
         setHeroMovie(trending.results?.[0] || null);
