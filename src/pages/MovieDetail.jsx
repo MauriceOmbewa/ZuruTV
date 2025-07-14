@@ -24,11 +24,13 @@ const MovieDetail = () => {
   useEffect(() => {
     const fetchMovieDetails = async () => {
       try {
+        console.log(`Fetching details for ${type} with ID: ${id}`);
         const [movieData, videosData] = await Promise.all([
           type === 'movie' ? GoWatchService.getMovieDetails(id) : GoWatchService.getTVShowDetails(id),
           type === 'movie' ? GoWatchService.getMovieVideos(id) : GoWatchService.getTVShowVideos(id),
         ]);
 
+        console.log('Fetched data:', movieData);
         setMovie(movieData);
         setVideos(videosData.results || []);
         
