@@ -1,9 +1,10 @@
 const STREMIO_BASE_URL = import.meta.env.VITE_STREMIO_BASE_URL || 'https://v3-cinemeta.strem.io';
 const RAPIDAPI_KEY = import.meta.env.VITE_RAPIDAPI_KEY || '7c0c550be7msh9b53caddfcc711fp1d1f27jsn0be1433b2089';
 const GOWATCH_BASE_URL = import.meta.env.VITE_GOWATCH_BASE_URL || 'https://gowatch.p.rapidapi.com';
-const TMDB_API_KEY = 'd242ab289791acb2603b10469634dff6';
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
+const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || 'd242ab289791acb2603b10469634dff6';
+const TMDB_BASE_URL = import.meta.env.VITE_TMDB_BASE_URL || 'https://api.themoviedb.org/3';
+const IMAGE_BASE_URL = import.meta.env.VITE_TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p';
+const VIDSRC_BASE_URL = import.meta.env.VITE_VIDSRC_BASE_URL || 'https://vidsrc.to/embed';
 
 const gowatchOptions = {
   method: 'GET',
@@ -91,7 +92,74 @@ class GoWatchService {
     this.tmdbApiKey = TMDB_API_KEY;
     this.tmdbBaseUrl = TMDB_BASE_URL;
     this.imageBaseUrl = IMAGE_BASE_URL;
+    this.vidsrcBaseUrl = VIDSRC_BASE_URL;
     this.catalogCache = new Map(); // Cache catalog data for fallback
+  }
+
+  // Generate VidSrc streaming URL with multiple source options
+  getVidSrcUrl(id, type = 'movie', season = null, episode = null) {
+    // Clean the ID - remove 'tt' prefix if present for some sources
+    const cleanId = id.toString().startsWith('tt') ? id : id;
+    
+    let url;
+    if (type === 'tv') {
+      // For TV shows, use series format
+      url = `${this.vidsrcBaseUrl}/tv/${cleanId}`;
+      if (season && episode) {
+        url += `/${season}/${episode}`;
+      }
+    } else {
+      // For movies
+      url = `${this.vidsrcBaseUrl}/movie/${cleanId}`;
+    }
+    
+    console.log(`Generated VidSrc URL: ${url}`);
+    return url;
+  }
+
+  // Get multiple streaming URL options
+  getStreamingUrls(id, type = 'movie', season = 1, episode = 1) {
+    const urls = [];
+    
+    // VidSrc primary
+    urls.push({
+      name: 'VidSrc',
+      url: this.getVidSrcUrl(id, type, season, episode)
+    });
+    
+    // Alternative VidSrc formats
+    if (id.toString().startsWith('tt')) {
+      // Try without 'tt' prefix
+      const numericId = id.toString().substring(2);
+      urls.push({
+        name: 'VidSrc Alt',
+        url: this.getVidSrcUrl(numericId, type, season, episode)
+      });
+    }
+    
+    // VidSrc.me alternative
+    const vidsrcMe = type === 'movie' 
+      ? `https://vidsrc.me/embed/movie?imdb=${id}`
+      : `https://vidsrc.me/embed/tv?imdb=${id}&season=${season}&episode=${episode}`;
+    
+    urls.push({
+      name: 'VidSrc.me',
+      url: vidsrcMe
+    });
+    
+    return urls;
+  }
+
+  // Get streaming URL for movie
+  getMovieStreamUrl(movieId) {
+    const urls = this.getStreamingUrls(movieId, 'movie');
+    return urls[0].url; // Return primary URL
+  }
+
+  // Get streaming URL for TV show
+  getTVStreamUrl(showId, season = 1, episode = 1) {
+    const urls = this.getStreamingUrls(showId, 'tv', season, episode);
+    return urls[0].url; // Return primary URL
   }
 
   async makeStremioRequest(endpoint) {
